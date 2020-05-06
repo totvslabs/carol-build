@@ -24,7 +24,7 @@ jobs:
     - uses: actions/checkout@v2
         
     - name: Build
-      uses: felipebmendes/carol-build-image-action@master
+      uses: totvslabs/carol-build@master
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         carol-tenant: 'tenant'

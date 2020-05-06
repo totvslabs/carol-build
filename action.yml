@@ -15,7 +15,7 @@ inputs:
   carol-api-key:
     description: "Carol app's API key"
   manifest-path:
-    description: "Manifest.json file path"
+    description: "Manifest.json file path. The default value points to the repository root, ff the file is not in there use the pattern /path/to/file/ to define its path."
     default: "/"
 runs:
   using: 'docker'

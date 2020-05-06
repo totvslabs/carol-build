@@ -46,39 +46,38 @@ with open(manifest_path) as f:
 
 logger.debug(f'Manifest: {manifest}')
 
-for build in manifest['docker']:
-    docker_name = build['dockerName']
-    docker_tag = build['dockerTag']
-    instance_type = build['instanceType']
-    app_name = build['appName']
+app = Apps(login)
 
-    app = Apps(login)
-    r = app.edit_manifest(app_name=app_name, manifest=manifest)
+r = app.edit_manifest(app_name=app_name, manifest=manifest)
 
 tasks = app.build_docker_git(git_token=git_token)
 
-for task in tasks:
-    task_id = task['mdmId']
+carol_task = Tasks(login)
 
-    logger.debug(f'Task id: {task_id}')
+indices = {}
 
-    task = Tasks(login, task_id)
-    logs = task.get_logs(task_id)
-    index = 0
+while all([carol_task.get_task(task['mdmId']).task_status in ['READY', 'RUNNING'] for task in tasks]):
 
-    for idx, log in enumerate(logs):
-        index = idx
-        logger.info(log['mdmLogMessage'])
+    to_remove = []
 
-    while task.task_status == 'READY' or task.task_status == 'RUNNING':
-        task.get_task(task_id)
-        logs = task.get_logs(task_id)
-        if len(logs) > index:
-            for i in np.arange(index, len(logs)):
+    for task in tasks:
+        task_id = task['mdmId']
+        logs = carol_task.get_logs(task_id)
+        indices[task_id] = 0
+
+        if len(logs) > indices[task_id]:
+            for i in np.arange(indices[task_id], len(logs)):
                 logger.info(logs[i]['mdmLogMessage'])   
-                index += 1
-        time.sleep(1)
+                indices[task_id] += 1
 
-    if task.task_status != 'COMPLETED':
-        logger.error(f'Something went wrong while building your docker image: {docker_name}:{docker_tag}. Task id: {task_id}')
-    
+        task_status = carol_task.get_task(task_id).task_status
+
+        if task_status == 'COMPLETED':
+            logger.info(f'Build of docker image: {docker_name}:{docker_tag} completed. Task id: {task_id}')
+            to_remove.append(task)
+        elif task_status not in ['READY', 'RUNNING']:
+            logger.error(f'Something went wrong while building your docker image: {docker_name}:{docker_tag}. Task id: {task_id}')
+            to_remove.append(task)
+
+    tasks = [task for task in tasks if task not in to_remove]
+    time.sleep(1)
