@@ -1,0 +1,30 @@
+name: 'Carol docker build'
+description: 'Builds docker image on Carol based on the manifest.json information.'
+author: 'GitHub'
+inputs: 
+  repo-token:
+    description: "The GITHUB_TOKEN secret"
+  carol-tenant:
+    description: "Carol app's tenant"
+  carol-organization:
+    description: "Carol app's organization"
+  carol-app-name:
+    description: "Carol app's name"
+  carol-connector-id:
+    description: "Carol app's connector id"
+  carol-api-key:
+    description: "Carol app's API key"
+  manifest-path:
+    description: "Manifest.json file path"
+    default: "/"
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.repo-token }}
+    - ${{ inputs.carol-tenant }}
+    - ${{ inputs.carol-organization }}
+    - ${{ inputs.carol-app-name }}
+    - ${{ inputs.carol-connector-id }}
+    - ${{ inputs.carol-api-key }}
+    - ${{ inputs.manifest-path }}
