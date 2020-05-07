@@ -54,7 +54,7 @@ tasks = app.build_docker_git(git_token=git_token)
 
 carol_task = Tasks(login)
 
-indices = defaultdict(int)
+indices = {task['mdmId']:0 for task in tasks}
 
 while all([carol_task.get_task(task['mdmId']).task_status in ['READY', 'RUNNING'] for task in tasks]):
 
