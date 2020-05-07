@@ -58,9 +58,7 @@ indices = defaultdict(int)
 
 while all([carol_task.get_task(task['mdmId']).task_status in ['READY', 'RUNNING'] for task in tasks]):
 
-    to_remove = []
-
-    for task in tasks:
+    for task in tasks[:]:
         task_id = task['mdmId']
         logs = carol_task.get_logs(task_id)
 
@@ -72,11 +70,10 @@ while all([carol_task.get_task(task['mdmId']).task_status in ['READY', 'RUNNING'
         task_status = carol_task.get_task(task_id).task_status
 
         if task_status == 'COMPLETED':
-            logger.info(f'Build of docker image: {docker_name}:{docker_tag} completed. Task id: {task_id}')
-            to_remove.append(task)
+            logger.info(f'Task {task_id} completed.')
+            tasks.pop(index(task))
         elif task_status not in ['READY', 'RUNNING']:
-            logger.error(f'Something went wrong while building your docker image: {docker_name}:{docker_tag}. Task id: {task_id}')
-            to_remove.append(task)
+            logger.error(f'Something went wrong while building your docker image. Task id: {task_id}')
+            tasks.pop(index(task))
 
-    tasks = [task for task in tasks if task not in to_remove]
     time.sleep(1)
