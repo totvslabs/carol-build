@@ -1,6 +1,6 @@
+from collections import defaultdict
 from pycarol import Carol, Apps, Tasks, ApiKeyAuth
 import argparse, json, os
-import numpy as np
 import logging
 import time
 
@@ -54,7 +54,7 @@ tasks = app.build_docker_git(git_token=git_token)
 
 carol_task = Tasks(login)
 
-indices = {}
+indices = defaultdict(int)
 
 while all([carol_task.get_task(task['mdmId']).task_status in ['READY', 'RUNNING'] for task in tasks]):
 
@@ -63,10 +63,9 @@ while all([carol_task.get_task(task['mdmId']).task_status in ['READY', 'RUNNING'
     for task in tasks:
         task_id = task['mdmId']
         logs = carol_task.get_logs(task_id)
-        indices[task_id] = 0
 
         if len(logs) > indices[task_id]:
-            for i in np.arange(indices[task_id], len(logs)):
+            for i in range(indices[task_id], len(logs)):
                 logger.info(logs[i]['mdmLogMessage'])   
                 indices[task_id] += 1
 
