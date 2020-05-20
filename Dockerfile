@@ -1,4 +1,4 @@
-FROM totvslabs/pycarol:2.33.2
+FROM totvslabs/pycarol:2.33.3
 
 # Copies your code file from your action repository to the filesystem path `/` of the container
 COPY entrypoint.sh /entrypoint.sh
