@@ -91,7 +91,7 @@ def run(args, tasks=None):
     r = c.get_app_logs(filters=filters, page_size=100)
 
     fail = False  # for exit code purpose
-    while (all([carol_task.get_task(task).task_status in ['READY', 'RUNNING'] for task in tasks]) and len(tasks) > 1) \
+    while (all([carol_task.get_task(task).task_status in ['READY', 'RUNNING'] for task in tasks]) and len(tasks) > 0) \
             or len(r['logEntries']) > 0:
 
         r = c.get_app_logs(filters=filters, page_size=100)
