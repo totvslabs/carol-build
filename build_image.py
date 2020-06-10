@@ -88,20 +88,28 @@ def run(args, tasks=None):
 
     carol_task = Tasks(login)
     c = Compute(login)
-    r = c.get_app_logs(filters=filters, page_size=100)
+    try:
+        r = c.get_app_logs(filters=filters, page_size=100)
+    except Exception as e:
+        logger.debug(f'Error processing the log entries on Carol., \n {e}')
+        r = {}
+        r['logEntries'] = []    
 
     fail = False  # for exit code purpose
     while (all([carol_task.get_task(task).task_status in ['READY', 'RUNNING'] for task in tasks]) and len(tasks) > 0) \
             or len(r['logEntries']) > 0:
 
-        r = c.get_app_logs(filters=filters, page_size=100)
+        try:
+            r = c.get_app_logs(filters=filters, page_size=100)
 
-        if r['logEntries']:
-            for entry in r['logEntries']:
-                logger.debug(entry['payload']['data'])
-            utc_now = datetime.utcfromtimestamp(entry['timestamp'] / 1000.0).isoformat(timespec='milliseconds') + 'Z'
-            filters = ['''labels."k8s-pod/kind"="build"''', f'''labels."k8s-pod/appName":"{app_name}"''',
-                       f'''timestamp>="{utc_now}"''']
+            if r['logEntries']:
+                for entry in r['logEntries']:
+                    logger.debug(entry['payload']['data'])
+                utc_now = datetime.utcfromtimestamp(entry['timestamp'] / 1000.0).isoformat(timespec='milliseconds') + 'Z'
+                filters = ['''labels."k8s-pod/kind"="build"''', f'''labels."k8s-pod/appName":"{app_name}"''',
+                        f'''timestamp>="{utc_now}"''']
+        except Exception as e:
+            logger.debug(f'Error processing the log entries on Carol., \n {e}')
 
         time.sleep(5)  # avoid rate limit from Carol.
 
