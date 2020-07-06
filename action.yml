@@ -2,8 +2,8 @@ name: 'Carol docker build'
 description: 'Builds docker image on Carol based on the manifest.json information.'
 author: 'GitHub'
 inputs: 
-  repo-token:
-    description: "The GITHUB_TOKEN secret"
+  git-token:
+    description: "A GitHub token that have access to the repository that you want to use for building the Docker image."
   carol-tenant:
     description: "Carol app's tenant"
   carol-organization:
@@ -21,7 +21,7 @@ runs:
   using: 'docker'
   image: 'Dockerfile'
   args:
-    - ${{ inputs.repo-token }}
+    - ${{ inputs.git-token }}
     - ${{ inputs.carol-tenant }}
     - ${{ inputs.carol-organization }}
     - ${{ inputs.carol-app-name }}

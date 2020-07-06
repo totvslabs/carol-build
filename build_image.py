@@ -41,7 +41,7 @@ def run(args, tasks=None):
 
         args: `argparse like` object.
             The object has to have the following parameters:
-                    1. args.gittoken: The GITHUB_TOKEN secret
+                    1. args.gittoken: A GitHub token
                     2. args.tenant: Carol app's tenant
                     3. args.appname: Carol app's organization
                     4. args.org: Carol app's name
