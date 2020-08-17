@@ -78,40 +78,15 @@ def run(args, tasks=None):
 
     logger.debug(f'Manifest: {manifest}')
 
-    filters = ['''labels."k8s-pod/kind"="build"''', f'''labels."k8s-pod/appName":"{app_name}"''']
-
     if tasks is None:
         tasks = create_build_jobs(login, manifest, app_name, git_token)
         tasks = [task['mdmId'] for task in tasks]
-        utc_now = datetime.utcnow().isoformat(timespec='milliseconds') + 'Z'
-        filters.append(f'''timestamp>="{utc_now}"''')
 
     carol_task = Tasks(login)
-    c = Compute(login)
-    try:
-        r = c.get_app_logs(filters=filters, page_size=100)
-    except Exception as e:
-        logger.debug(f'Error processing the log entries on Carol., \n {e}')
-        r = {}
-        r['logEntries'] = []    
 
     fail = False  # for exit code purpose
-    while (all([carol_task.get_task(task).task_status in ['READY', 'RUNNING'] for task in tasks]) and len(tasks) > 0) \
-            or len(r['logEntries']) > 0:
-
-        try:
-            r = c.get_app_logs(filters=filters, page_size=100)
-
-            if r['logEntries']:
-                for entry in r['logEntries']:
-                    logger.debug(entry['payload']['data'])
-                utc_now = datetime.utcfromtimestamp(entry['timestamp'] / 1000.0).isoformat(timespec='milliseconds') + 'Z'
-                filters = ['''labels."k8s-pod/kind"="build"''', f'''labels."k8s-pod/appName":"{app_name}"''',
-                        f'''timestamp>="{utc_now}"''']
-        except Exception as e:
-            logger.debug(f'Error processing the log entries on Carol., \n {e}')
-
-        time.sleep(5)  # avoid rate limit from Carol.
+    while any([carol_task.get_task(task).task_status in ['READY', 'RUNNING'] for task in tasks]):
+        time.sleep(3)
 
     for task_id in tasks:
         logs = carol_task.get_logs(task_id)
@@ -123,10 +98,13 @@ def run(args, tasks=None):
             logger.info(f'Task {task_id} completed.')
         elif task_status in ['FAILED']:
             logger.error(f'Something went wrong while building your docker image. Task id: {task_id}')
+            mdmId = Apps(login).get_by_name(app_name)['mdmId']
+            logger.error(f'Check logs in https://{organization}.carol.ai/{tenant}/carol-ui/carol-app-dev/{mdmId}/logs?s=labels.%22k8s-pod%2Fkind%22%3D%22build%22&p=1&ps=25')
             fail = True
 
-    sys.exit(int(fail))
+    return int(fail)
 
 
 if __name__ == '__main__':
-    run(args)
+    fail = run(args)
+    sys.exit(int(fail))
