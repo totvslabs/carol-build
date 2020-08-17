@@ -35,5 +35,5 @@ jobs:
         manifest-path: '.'
 ```
 PS: It is recommended storing the connector id and api key information in the repository's secrets. See [Creating and storing encrypted secrets](https://help.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets) for more details. 
-Also, if your repository is not open, you should create a Github Token `GIT_TOKEN` and add it to the secret as well. 
-It seems the automatically  `GITHUB_TOKEN` does not work for private repos. 
+Also, if your repository is private, you should create a Github Token `GIT_TOKEN` and add it to the secret as well. 
+It seems the automatically created `GITHUB_TOKEN` does not work for private repos. 
